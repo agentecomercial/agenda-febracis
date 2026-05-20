@@ -1452,14 +1452,12 @@
     toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
   }
 
-  // Tela inicial antes do GIS carregar
+  // Tela inicial antes do GIS carregar — mostra setup ou login.
+  // Quando o GIS chega, gisLoaded() chama decidirTela() e ajusta.
   if (!clientId) {
     mostrarSetup();
   } else {
-    // mostra um loading inicial até GIS chegar
-    document.getElementById('login').hidden = false;
-    document.getElementById('login').innerHTML =
-      '<div class="loading"><div class="spinner"></div>Inicializando login Google...</div>';
+    mostrarLogin();
   }
 </script>
 
