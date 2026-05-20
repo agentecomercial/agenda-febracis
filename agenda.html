@@ -1134,6 +1134,7 @@
       eventos = (data.items || []).map(parseEvento);
       treinosUnicos = derivarTreinos(eventos);
       renderizarChipsTreinos();
+      popularMesesNoSelect();
       aplicarFiltros();
     } catch (err) {
       mostrarErro('Falha de rede: ' + err.message);
@@ -1227,6 +1228,35 @@
     bindSelects();
   }
 
+  function popularMesesNoSelect() {
+    const sel = document.getElementById('periodo-select');
+    if (!sel) return;
+    // remove optgroup antigo de meses se já existir (re-render após refresh)
+    const oldMeses = sel.querySelector('optgroup[data-meses]');
+    if (oldMeses) oldMeses.remove();
+    if (!eventos.length) return;
+    const set = new Set();
+    eventos.forEach(e => {
+      set.add(e.start.getFullYear() + '-' + String(e.start.getMonth()).padStart(2, '0'));
+    });
+    const meses = Array.from(set).sort();
+    const grupo = document.createElement('optgroup');
+    grupo.label = '📆 Por mês';
+    grupo.dataset.meses = '1';
+    meses.forEach(m => {
+      const [ano, mesIdx] = m.split('-').map(Number);
+      const opt = document.createElement('option');
+      opt.value = 'month:' + m;
+      opt.textContent = MESES_LONG[mesIdx] + ' ' + ano;
+      grupo.appendChild(opt);
+    });
+    sel.appendChild(grupo);
+    // restaura seleção atual se for um mês
+    if (filtros.periodo && filtros.periodo.startsWith && filtros.periodo.startsWith('month:')) {
+      sel.value = filtros.periodo;
+    }
+  }
+
   function bindSelects() {
     document.querySelectorAll('.select-filter').forEach(sel => {
       if (sel.dataset.bound === '1') return;
@@ -1275,6 +1305,11 @@
     if (filtros.periodo === 'all') {
       base = new Date(agora); base.setDate(agora.getDate() - 800);
       limite = new Date(agora); limite.setDate(agora.getDate() + 400);
+    } else if (typeof filtros.periodo === 'string' && filtros.periodo.indexOf('month:') === 0) {
+      const partes = filtros.periodo.substring(6).split('-').map(Number);
+      const ano = partes[0], mesIdx = partes[1];
+      base = new Date(ano, mesIdx, 1, 0, 0, 0);
+      limite = new Date(ano, mesIdx + 1, 0, 23, 59, 59); // último dia do mês
     } else {
       const d = parseInt(filtros.periodo, 10);
       if (d < 0) {
@@ -1544,6 +1579,10 @@
   // =========================================================================
   function labelPeriodo() {
     const p = filtros.periodo;
+    if (typeof p === 'string' && p.indexOf('month:') === 0) {
+      const partes = p.substring(6).split('-').map(Number);
+      return MESES_LONG[partes[1]] + ' ' + partes[0];
+    }
     const mapa = {
       '-730': 'Últimos 2 anos',
       '-365': 'Último ano',
