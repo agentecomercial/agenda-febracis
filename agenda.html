@@ -1080,7 +1080,7 @@
   function renderizarChipsTreinos() {
     const row = document.getElementById('treinos-row');
     Array.from(row.querySelectorAll('.chip[data-value]:not([data-value=""])')).forEach(c => c.remove());
-    treinosUnicos.slice(0, 12).forEach(t => {
+    treinosUnicos.slice(0, 10).forEach(t => {
       const btn = document.createElement('button');
       btn.className = 'chip';
       btn.dataset.filter = 'treinamento';
