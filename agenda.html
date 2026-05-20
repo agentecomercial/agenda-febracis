@@ -690,6 +690,18 @@
           <button class="chip active" data-filter="treinamento" data-value="">Todos</button>
         </div>
 
+        <div class="filter-row" id="treinadores-row">
+          <span class="filter-label">Treinador</span>
+          <button class="chip active" data-filter="treinador" data-value="">Todos</button>
+          <button class="chip" data-filter="treinador" data-value="FILIPE">FILIPE</button>
+          <button class="chip" data-filter="treinador" data-value="RAFAEL">RAFAEL</button>
+          <button class="chip" data-filter="treinador" data-value="BRUNA">BRUNA</button>
+          <button class="chip" data-filter="treinador" data-value="THIAGO">THIAGO</button>
+          <button class="chip" data-filter="treinador" data-value="MATHEUS">MATHEUS</button>
+          <button class="chip" data-filter="treinador" data-value="ALBERTO">ALBERTO</button>
+          <button class="chip" data-filter="treinador" data-value="NONE">Sem treinador</button>
+        </div>
+
         <input type="search" class="search" id="search" placeholder="🔍 Buscar por título, descrição, local...">
 
       </div>
@@ -728,6 +740,7 @@
     BEL: { nome: 'Belém',    cor: '#ffb84f' },
     THE: { nome: 'Teresina', cor: '#ff6b9d' }
   };
+  const TREINADORES = ['FILIPE', 'RAFAEL', 'BRUNA', 'THIAGO', 'MATHEUS', 'ALBERTO'];
   const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   const MESES_LONG = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   const ICON_COPY = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
@@ -747,8 +760,8 @@
   let eventos = [];
   let eventosVisiveis = [];
   let treinosUnicos = [];
-  const filtros = { unidade: '', periodo: '90', treinamento: '', busca: '' };
-  const FILTRO_DEFAULT = { unidade: '', periodo: 'all', treinamento: '' };
+  const filtros = { unidade: '', periodo: '90', treinamento: '', treinador: '', busca: '' };
+  const FILTRO_DEFAULT = { unidade: '', periodo: 'all', treinamento: '', treinador: '' };
 
   // =========================================================================
   // INIT
@@ -1004,9 +1017,19 @@
       }
     }
 
+    let treinador = null;
+    for (const nome of TREINADORES) {
+      if (new RegExp('\\b' + nome + '\\b').test(blob)) {
+        treinador = nome;
+        break;
+      }
+    }
+
+    const reTreinadores = new RegExp('\\b(' + TREINADORES.join('|') + ')\\b', 'gi');
     let limpo = titulo
       .replace(/\b(BEL|VIX|THE)\b/gi, '')
       .replace(/\b(BEL[ÉE]M|VIT[ÓO]RIA|TERESINA)\b/gi, '')
+      .replace(reTreinadores, '')
       .replace(/\b\d{1,2}\s*[\/\-aàáeé]\s*\d{1,2}(\/\d{1,4})?\b/gi, '')
       .replace(/\b\d{1,2}[\/\-]\d{1,2}([\/\-]\d{2,4})?\b/g, '')
       .replace(/[\-\|·•:,]/g, ' ')
@@ -1023,6 +1046,7 @@
     return {
       raw: evt, id: evt.id, titulo, treinamento, unidade,
       unidadeNome: unidade ? UNIDADES[unidade].nome : 'Sem código',
+      treinador,
       local, desc,
       start: new Date(start), end: new Date(end),
       allDay, link: evt.htmlLink || ''
@@ -1106,6 +1130,10 @@
       if (e.end < base) return false;
       if (e.start > limite) return false;
       if (filtros.treinamento && e.treinamento.toUpperCase() !== filtros.treinamento.toUpperCase()) return false;
+      if (filtros.treinador) {
+        if (filtros.treinador === 'NONE' && e.treinador) return false;
+        if (filtros.treinador !== 'NONE' && e.treinador !== filtros.treinador) return false;
+      }
       if (filtros.busca) {
         const blob = (e.titulo + ' ' + e.desc + ' ' + e.local).toLowerCase();
         if (!blob.includes(filtros.busca)) return false;
@@ -1358,6 +1386,7 @@
     if (filtros.unidade) sub.push(UNIDADES[filtros.unidade] ? UNIDADES[filtros.unidade].nome : filtros.unidade);
     sub.push(labelPeriodo());
     if (filtros.treinamento) sub.push(filtros.treinamento);
+    if (filtros.treinador) sub.push(filtros.treinador === 'NONE' ? 'Sem treinador' : filtros.treinador);
     if (filtros.busca) sub.push('"' + filtros.busca + '"');
     titulo += ' — _' + sub.join(' · ') + '_';
     partes.push(titulo);
