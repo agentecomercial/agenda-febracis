@@ -1235,11 +1235,14 @@
     const oldMeses = sel.querySelector('optgroup[data-meses]');
     if (oldMeses) oldMeses.remove();
     if (!eventos.length) return;
+    const ANO_MIN = 2026;
     const set = new Set();
     eventos.forEach(e => {
+      if (e.start.getFullYear() < ANO_MIN) return; // ignora meses anteriores a 2026
       set.add(e.start.getFullYear() + '-' + String(e.start.getMonth()).padStart(2, '0'));
     });
     const meses = Array.from(set).sort();
+    if (!meses.length) return;
     const grupo = document.createElement('optgroup');
     grupo.label = '📆 Por mês';
     grupo.dataset.meses = '1';
