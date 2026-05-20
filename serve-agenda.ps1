@@ -75,6 +75,9 @@ while ($listener.IsListening) {
       $res.ContentType = $ct
       $res.ContentLength64 = $bytes.Length
       $res.AddHeader('Cache-Control', 'no-cache')
+      # Headers exigidos pelo Google Identity Services para o popup OAuth funcionar sem warnings COOP
+      $res.AddHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+      $res.AddHeader('Cross-Origin-Embedder-Policy', 'unsafe-none')
       $res.OutputStream.Write($bytes, 0, $bytes.Length)
       $res.StatusCode = 200
       Write-Host "[200] $path" -ForegroundColor DarkGray

@@ -796,6 +796,11 @@
           toast('Erro de login: ' + (resp.error_description || resp.error), 'error');
           return;
         }
+        // Verifica se o escopo de calendar.readonly foi efetivamente concedido
+        if (resp.scope && !/calendar\.readonly/.test(resp.scope)) {
+          toast('Você precisa autorizar a leitura dos calendários. Tente entrar de novo e marcar TODAS as permissões.', 'error');
+          return;
+        }
         token = resp.access_token;
         // expires_in vem em segundos
         tokenExp = Date.now() + ((resp.expires_in || 3600) - 60) * 1000; // -60s de folga
@@ -916,8 +921,8 @@
       toast('Aguardando carregamento da biblioteca Google. Tente em 2s.', 'error');
       return;
     }
-    // prompt vazio = silencioso se já autorizou antes
-    tokenClient.requestAccessToken({ prompt: token ? '' : 'consent' });
+    // Sempre força tela de consentimento — evita Google devolver token com escopo antigo/incompleto
+    tokenClient.requestAccessToken({ prompt: 'consent' });
   }
 
   function logout() {
@@ -976,6 +981,14 @@
           toast('Sessão expirada. Renovando...', 'error');
           token = ''; tokenExp = 0;
           if (tokenClient) tokenClient.requestAccessToken({ prompt: '' });
+          return;
+        }
+        if (res.status === 403 && /insufficient|scope/i.test(erro)) {
+          // token sem escopo de calendário — limpa tudo e força nova consent
+          token = ''; tokenExp = 0;
+          localStorage.removeItem(STORAGE.TOKEN);
+          localStorage.removeItem(STORAGE.TOKEN_EXP);
+          mostrarErro('Token sem permissão de leitura de calendário. Clique em "Sair" e entre de novo — na tela do Google, MARQUE todas as permissões (incluindo "Ver eventos em todos os seus calendários") antes de continuar.');
           return;
         }
         if (res.status === 404) {
