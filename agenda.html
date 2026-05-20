@@ -523,6 +523,63 @@
     }
 
     /* =====================================================================
+       SIDEBAR LAYOUT
+       ===================================================================== */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .sidebar { position: sticky; top: 18px; }
+    .sidebar-card {
+      padding: 18px 18px 14px;
+      margin-bottom: 0;
+    }
+    .sidebar-section {
+      margin-bottom: 16px;
+    }
+    .sidebar-section:last-child { margin-bottom: 0; }
+    .sidebar-section .filter-label {
+      display: block;
+      min-width: 0;
+      margin-bottom: 6px;
+    }
+    .sidebar-section .filter-row {
+      gap: 5px;
+      margin: 0;
+    }
+    .chips-compact .chip {
+      padding: 4px 9px;
+      font-size: 11.5px;
+    }
+    .select-filter {
+      width: 100%;
+      padding: 9px 32px 9px 12px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1L5 5L9 1" stroke="%23888" stroke-width="1.5" stroke-linecap="round"/></svg>');
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    .select-filter:focus { border-color: var(--accent); outline: none; }
+    .select-filter:hover { border-color: var(--accent); }
+    .select-filter option { background: var(--bg-2); color: var(--text); }
+
+    @media (max-width: 900px) {
+      .app-layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+    }
+
+    /* =====================================================================
        MOBILE — telas até 768px (tablets) e até 480px (celulares)
        ===================================================================== */
     @media (max-width: 768px) {
@@ -655,61 +712,76 @@
   <!-- App principal -->
   <div id="app" hidden>
 
-    <div class="card">
-      <div class="filters">
+    <div class="app-layout">
 
-        <div class="filter-row">
-          <span class="filter-label">Unidade</span>
-          <button class="chip active" data-filter="unidade" data-value="">Todas <span class="chip-count" id="cnt-total"></span></button>
-          <button class="chip vix" data-filter="unidade" data-value="VIX">VIX · Vitória <span class="chip-count" id="cnt-vix"></span></button>
-          <button class="chip bel" data-filter="unidade" data-value="BEL">BEL · Belém <span class="chip-count" id="cnt-bel"></span></button>
-          <button class="chip the" data-filter="unidade" data-value="THE">THE · Teresina <span class="chip-count" id="cnt-the"></span></button>
-          <button class="chip" data-filter="unidade" data-value="NONE">Sem código <span class="chip-count" id="cnt-none"></span></button>
+      <aside class="sidebar">
+        <div class="card sidebar-card">
+
+          <div class="sidebar-section">
+            <span class="filter-label">Unidade</span>
+            <div class="filter-row chips-compact">
+              <button class="chip active" data-filter="unidade" data-value="">Todas <span class="chip-count" id="cnt-total"></span></button>
+              <button class="chip vix" data-filter="unidade" data-value="VIX">VIX <span class="chip-count" id="cnt-vix"></span></button>
+              <button class="chip bel" data-filter="unidade" data-value="BEL">BEL <span class="chip-count" id="cnt-bel"></span></button>
+              <button class="chip the" data-filter="unidade" data-value="THE">THE <span class="chip-count" id="cnt-the"></span></button>
+              <button class="chip" data-filter="unidade" data-value="NONE">Sem código <span class="chip-count" id="cnt-none"></span></button>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <label class="filter-label" for="periodo-select">Período</label>
+            <select class="select-filter" id="periodo-select" data-filter="periodo">
+              <option value="all">Tudo (passado + futuro)</option>
+              <optgroup label="⬅ Passado">
+                <option value="-30">Últimos 30 dias</option>
+                <option value="-90">Últimos 90 dias</option>
+                <option value="-180">Últimos 6 meses</option>
+                <option value="-365">Último ano</option>
+                <option value="-730">Últimos 2 anos</option>
+              </optgroup>
+              <optgroup label="Futuro ➡">
+                <option value="30">Próximos 30 dias</option>
+                <option value="90" selected>Próximos 90 dias</option>
+                <option value="180">Próximos 6 meses</option>
+                <option value="365">Próximo ano</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="sidebar-section">
+            <label class="filter-label" for="treinamento-select">Treinamento</label>
+            <select class="select-filter" id="treinamento-select" data-filter="treinamento">
+              <option value="">Todos</option>
+            </select>
+          </div>
+
+          <div class="sidebar-section">
+            <label class="filter-label" for="treinador-select">Treinador</label>
+            <select class="select-filter" id="treinador-select" data-filter="treinador">
+              <option value="">Todos</option>
+              <option value="FILIPE">FILIPE</option>
+              <option value="RAFAEL">RAFAEL</option>
+              <option value="BRUNA">BRUNA</option>
+              <option value="THIAGO">THIAGO</option>
+              <option value="MATHEUS">MATHEUS</option>
+              <option value="ALBERTO">ALBERTO</option>
+              <option value="NONE">Sem treinador</option>
+            </select>
+          </div>
+
+          <div class="sidebar-section">
+            <input type="search" class="search" id="search" placeholder="🔍 Buscar...">
+          </div>
+
         </div>
+      </aside>
 
-        <div class="filter-row">
-          <span class="filter-label">Passado</span>
-          <button class="chip" data-filter="periodo" data-value="-730">Últimos 2 anos</button>
-          <button class="chip" data-filter="periodo" data-value="-365">Último ano</button>
-          <button class="chip" data-filter="periodo" data-value="-180">Últimos 6m</button>
-          <button class="chip" data-filter="periodo" data-value="-90">Últimos 90d</button>
-          <button class="chip" data-filter="periodo" data-value="-30">Últimos 30d</button>
-        </div>
+      <main class="main-col">
+        <div class="stats" id="stats"></div>
+        <div id="lista"></div>
+      </main>
 
-        <div class="filter-row">
-          <span class="filter-label">Futuro</span>
-          <button class="chip" data-filter="periodo" data-value="30">Próximos 30d</button>
-          <button class="chip active" data-filter="periodo" data-value="90">Próximos 90d</button>
-          <button class="chip" data-filter="periodo" data-value="180">Próximos 6m</button>
-          <button class="chip" data-filter="periodo" data-value="365">Próximo ano</button>
-          <button class="chip" data-filter="periodo" data-value="all">Tudo (passado + futuro)</button>
-        </div>
-
-        <div class="filter-row" id="treinos-row">
-          <span class="filter-label">Treinamento</span>
-          <button class="chip active" data-filter="treinamento" data-value="">Todos</button>
-        </div>
-
-        <div class="filter-row" id="treinadores-row">
-          <span class="filter-label">Treinador</span>
-          <button class="chip active" data-filter="treinador" data-value="">Todos</button>
-          <button class="chip" data-filter="treinador" data-value="FILIPE">FILIPE</button>
-          <button class="chip" data-filter="treinador" data-value="RAFAEL">RAFAEL</button>
-          <button class="chip" data-filter="treinador" data-value="BRUNA">BRUNA</button>
-          <button class="chip" data-filter="treinador" data-value="THIAGO">THIAGO</button>
-          <button class="chip" data-filter="treinador" data-value="MATHEUS">MATHEUS</button>
-          <button class="chip" data-filter="treinador" data-value="ALBERTO">ALBERTO</button>
-          <button class="chip" data-filter="treinador" data-value="NONE">Sem treinador</button>
-        </div>
-
-        <input type="search" class="search" id="search" placeholder="🔍 Buscar por título, descrição, local...">
-
-      </div>
     </div>
-
-    <div class="stats" id="stats"></div>
-
-    <div id="lista"></div>
 
   </div>
 
@@ -1078,18 +1150,34 @@
   }
 
   function renderizarChipsTreinos() {
-    const row = document.getElementById('treinos-row');
-    Array.from(row.querySelectorAll('.chip[data-value]:not([data-value=""])')).forEach(c => c.remove());
-    treinosUnicos.slice(0, 10).forEach(t => {
-      const btn = document.createElement('button');
-      btn.className = 'chip';
-      btn.dataset.filter = 'treinamento';
-      btn.dataset.value = t.nome;
-      btn.innerHTML = escapeHtml(t.nome) + ' <span class="chip-count">' + t.count + '</span>';
-      row.appendChild(btn);
+    // popula o <select> de treinamento com base nos eventos
+    const sel = document.getElementById('treinamento-select');
+    if (!sel) return;
+    const valorAtual = sel.value || filtros.treinamento || '';
+    // limpa todas opções exceto "Todos"
+    Array.from(sel.querySelectorAll('option:not([value=""])')).forEach(o => o.remove());
+    treinosUnicos.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.nome;
+      opt.textContent = t.nome + ' (' + t.count + ')';
+      sel.appendChild(opt);
     });
-    bindChips();
+    if (valorAtual) sel.value = valorAtual;
+    bindSelects();
   }
+
+  function bindSelects() {
+    document.querySelectorAll('.select-filter').forEach(sel => {
+      if (sel.dataset.bound === '1') return;
+      sel.dataset.bound = '1';
+      sel.onchange = () => {
+        const f = sel.dataset.filter;
+        filtros[f] = sel.value;
+        aplicarFiltros();
+      };
+    });
+  }
+  bindSelects();
 
   // =========================================================================
   // FILTROS
