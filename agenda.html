@@ -1186,8 +1186,9 @@
     document.getElementById('stats').innerHTML = '';
 
     const hoje = new Date();
-    const inicio = new Date(hoje); inicio.setDate(hoje.getDate() - 800);   // ~2 anos atrás
-    const fim    = new Date(hoje); fim.setDate(hoje.getDate() + 400);      // ~13 meses à frente
+    // janela inclui margem de ±1 dia pra capturar eventos all-day nas bordas (UTC vs local)
+    const inicio = new Date(hoje); inicio.setDate(hoje.getDate() - 801);   // ~2 anos atrás
+    const fim    = new Date(hoje); fim.setDate(hoje.getDate() + 401);      // ~13 meses à frente
 
     const url =
       'https://www.googleapis.com/calendar/v3/calendars/' +
@@ -1244,6 +1245,35 @@
     toast(msg, 'error');
   }
 
+  /**
+   * Converte uma string de data do Google Calendar em Date "fiel ao calendário".
+   *
+   * Convenções do Google Calendar API v3:
+   *   - dateTime: ISO 8601 com fuso, ex: "2026-06-09T09:00:00-03:00" (evento com hora)
+   *   - date:     "YYYY-MM-DD" sem fuso, representa dia LOCAL da agenda (evento all-day)
+   *   - end.date é EXCLUSIVO: evento de 9-11 retorna end.date = "2026-06-12"
+   *
+   * Problema do new Date(string) nativo:
+   *   - new Date("2026-06-09") → meia-noite UTC → em Brasília vira 21:00 do dia ANTERIOR
+   *   - new Date("2026-06-09T09:00:00-03:00") em outro fuso converte pra fuso do navegador
+   *
+   * Esta função extrai os valores "wall-clock" literais do calendário e os usa
+   * como horário local do browser, garantindo que .getDate() / .getHours() / etc.
+   * retornem o que está escrito no Google Agenda, independentemente da região do usuário.
+   */
+  function parseDataEvento(s) {
+    if (!s) return null;
+    if (s.indexOf('T') >= 0) {
+      // dateTime — pega ano/mês/dia/hora/min literais, ignora offset
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/);
+      if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0));
+      return new Date(s); // fallback raríssimo
+    }
+    // date-only "YYYY-MM-DD" → meia-noite LOCAL (e não UTC)
+    const p = s.split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2], 0, 0, 0);
+  }
+
   function parseEvento(evt) {
     const titulo = evt.summary || '(Sem título)';
     const local = evt.location || '';
@@ -1289,7 +1319,8 @@
       unidadeNome: unidade ? UNIDADES[unidade].nome : 'Sem código',
       treinador,
       local, desc,
-      start: new Date(start), end: new Date(end),
+      start: parseDataEvento(start),
+      end:   parseDataEvento(end),
       allDay, link: evt.htmlLink || ''
     };
   }
@@ -1689,7 +1720,14 @@
 
   function formatarData(e) {
     const ini = e.start;
-    const fim = new Date(e.end.getTime() - (e.allDay ? 86400000 : 0));
+    // all-day: end.date é exclusivo → subtrai 1 dia (calendar-safe, ignora DST)
+    let fim;
+    if (e.allDay) {
+      fim = new Date(e.end);
+      fim.setDate(fim.getDate() - 1);
+    } else {
+      fim = e.end;
+    }
     const mesmodia = ini.toDateString() === fim.toDateString();
     if (e.allDay) {
       if (mesmodia) return diaCurto(ini);
@@ -1779,7 +1817,13 @@
 
   function formatarDataApenas(e) {
     const ini = e.start;
-    const fim = new Date(e.end.getTime() - (e.allDay ? 86400000 : 0));
+    let fim;
+    if (e.allDay) {
+      fim = new Date(e.end);
+      fim.setDate(fim.getDate() - 1);
+    } else {
+      fim = e.end;
+    }
     const mesmodia = ini.toDateString() === fim.toDateString();
     if (mesmodia) return diaCurto(ini) + ' - ' + ini.getFullYear();
     return diaCurto(ini) + ' → ' + diaCurto(fim) + ' - ' + fim.getFullYear();
