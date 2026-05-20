@@ -533,8 +533,61 @@
     }
     .sidebar { position: sticky; top: 18px; }
     .sidebar-card {
-      padding: 18px 18px 14px;
+      padding: 16px 18px 16px;
       margin-bottom: 0;
+    }
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-header strong {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-ativos {
+      background: var(--accent);
+      color: #000;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: 999px;
+      min-width: 18px;
+      text-align: center;
+    }
+    .badge-ativos.zero {
+      background: var(--bg-3);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0 6px;
+    }
+    .clear-link {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 4px 8px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .clear-link:hover {
+      background: rgba(0,255,102,0.1);
+      color: var(--accent-dim);
     }
     .sidebar-section {
       margin-bottom: 16px;
@@ -717,6 +770,14 @@
       <aside class="sidebar">
         <div class="card sidebar-card">
 
+          <div class="sidebar-header">
+            <strong>Filtros <span class="badge-ativos zero" id="badge-ativos">0</span></strong>
+            <button class="clear-link" id="btn-limpar" onclick="limparFiltros()" hidden>
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+              Limpar
+            </button>
+          </div>
+
           <div class="sidebar-section">
             <span class="filter-label">Unidade</span>
             <div class="filter-row chips-compact">
@@ -833,7 +894,7 @@
   let eventosVisiveis = [];
   let treinosUnicos = [];
   const filtros = { unidade: '', periodo: '90', treinamento: '', treinador: '', busca: '' };
-  const FILTRO_DEFAULT = { unidade: '', periodo: 'all', treinamento: '', treinador: '' };
+  const FILTRO_DEFAULT = { unidade: '', periodo: '90', treinamento: '', treinador: '', busca: '' };
 
   // =========================================================================
   // INIT
@@ -1254,6 +1315,50 @@
     renderizarStats(filtrados, semUnidade);
     renderizarLista(filtrados);
     atualizarContagens(filtrados, semUnidade);
+    atualizarBadgeAtivos();
+  }
+
+  function contarFiltrosAtivos() {
+    let n = 0;
+    if (filtros.unidade !== FILTRO_DEFAULT.unidade) n++;
+    if (filtros.periodo !== FILTRO_DEFAULT.periodo) n++;
+    if (filtros.treinamento !== FILTRO_DEFAULT.treinamento) n++;
+    if (filtros.treinador !== FILTRO_DEFAULT.treinador) n++;
+    if (filtros.busca) n++;
+    return n;
+  }
+
+  function atualizarBadgeAtivos() {
+    const n = contarFiltrosAtivos();
+    const badge = document.getElementById('badge-ativos');
+    const btn = document.getElementById('btn-limpar');
+    if (badge) {
+      badge.textContent = n;
+      badge.classList.toggle('zero', n === 0);
+    }
+    if (btn) btn.hidden = n === 0;
+  }
+
+  function limparFiltros() {
+    filtros.unidade = FILTRO_DEFAULT.unidade;
+    filtros.periodo = FILTRO_DEFAULT.periodo;
+    filtros.treinamento = FILTRO_DEFAULT.treinamento;
+    filtros.treinador = FILTRO_DEFAULT.treinador;
+    filtros.busca = '';
+
+    // sincroniza UI
+    document.querySelectorAll('.chip').forEach(c => {
+      if (!c.dataset.filter) return;
+      c.classList.toggle('active', c.dataset.value === filtros[c.dataset.filter]);
+    });
+    document.querySelectorAll('.select-filter').forEach(sel => {
+      sel.value = filtros[sel.dataset.filter];
+    });
+    const search = document.getElementById('search');
+    if (search) search.value = '';
+
+    aplicarFiltros();
+    toast('Filtros limpos.');
   }
 
   function atualizarContagens(visiveis, semUnidade) {
