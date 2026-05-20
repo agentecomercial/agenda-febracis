@@ -1577,8 +1577,12 @@
     const ini = e.start;
     const fim = new Date(e.end.getTime() - (e.allDay ? 86400000 : 0));
     const mesmodia = ini.toDateString() === fim.toDateString();
-    if (mesmodia) return diaCurto(ini);
-    return diaCurto(ini) + ' → ' + diaCurto(fim);
+    if (mesmodia) return diaCurto(ini) + ' - ' + ini.getFullYear();
+    if (ini.getFullYear() !== fim.getFullYear()) {
+      // evento que cruza ano (raro): mostra ano em cada data
+      return diaCurto(ini) + '/' + ini.getFullYear() + ' → ' + diaCurto(fim) + '/' + fim.getFullYear();
+    }
+    return diaCurto(ini) + ' → ' + diaCurto(fim) + ' - ' + fim.getFullYear();
   }
 
   function hora24(d) {
