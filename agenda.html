@@ -1791,18 +1791,6 @@
 
   function formatarListaTexto(lista) {
     const partes = [];
-    let titulo = '*📅 Treinamentos*';
-    const sub = [];
-    if (filtros.unidade) sub.push(UNIDADES[filtros.unidade] ? UNIDADES[filtros.unidade].nome : filtros.unidade);
-    sub.push(labelPeriodo());
-    if (filtros.treinamento) sub.push(filtros.treinamento);
-    if (filtros.treinador && filtros.treinador.length) {
-      sub.push(filtros.treinador.map(t => t === 'NONE' ? 'Sem treinador' : t).join(' / '));
-    }
-    if (filtros.busca) sub.push('"' + filtros.busca + '"');
-    titulo += ' — _' + sub.join(' · ') + '_';
-    partes.push(titulo);
-    partes.push('');
 
     if (!lista.length) {
       partes.push('_Nenhum evento neste filtro._');
