@@ -1328,11 +1328,15 @@
   function formatarEventoTexto(e) {
     let txt = 'TREINAMENTO: *' + e.titulo + '*';
     txt += '\nDATA: 📅 ' + formatarDataApenas(e);
-    if (!e.allDay) {
-      txt += '\nHORARIO: ' + hora24(e.start) + ' as ' + hora24(e.end) + '.';
-    }
+    txt += '\nHORARIO: ' + horarioTexto(e) + '.';
     if (e.local) txt += '\nLOCAL: 📍 ' + e.local;
     return txt;
+  }
+
+  function horarioTexto(e) {
+    // eventos de dia inteiro (sem horário no Google Agenda) → default treinamento Febracis
+    if (e.allDay) return '09:00 as 21:00';
+    return hora24(e.start) + ' as ' + hora24(e.end);
   }
 
   function formatarDataApenas(e) {
