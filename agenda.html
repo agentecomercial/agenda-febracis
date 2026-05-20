@@ -1276,10 +1276,25 @@
   }
 
   function formatarEventoTexto(e) {
-    const dt = formatarData(e);
-    let txt = '*' + e.titulo + '*\n📅 ' + dt;
-    if (e.local) txt += '\n📍 ' + e.local;
+    let txt = 'TREINAMENTO: *' + e.titulo + '*';
+    txt += '\nDATA: 📅 ' + formatarDataApenas(e);
+    if (!e.allDay) {
+      txt += '\nHORARIO: ' + hora24(e.start) + ' as ' + hora24(e.end) + '.';
+    }
+    if (e.local) txt += '\nLOCAL: 📍 ' + e.local;
     return txt;
+  }
+
+  function formatarDataApenas(e) {
+    const ini = e.start;
+    const fim = new Date(e.end.getTime() - (e.allDay ? 86400000 : 0));
+    const mesmodia = ini.toDateString() === fim.toDateString();
+    if (mesmodia) return diaCurto(ini);
+    return diaCurto(ini) + ' → ' + diaCurto(fim);
+  }
+
+  function hora24(d) {
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   }
 
   function formatarListaTexto(lista) {
